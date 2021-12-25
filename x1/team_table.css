@@ -1,0 +1,269 @@
+/* https://cssbuttongenerator.com/ */
+/* расцветка отсутствующих товарищей */
+div.row.headerRow td.userColumn.ABSENT        {background-color: indianred;}
+div.row.headerRow td.userColumn.WEEK_ABSENT   {background-color: orange;}
+div.row.headerRow td.userColumn.TWO_WEEK_ABSENT {background-color: yellow;}
+
+
+/* минимальная высота для периодов в день длиной */
+div.row.dayPeriod table.canban {min-height: 80px;}
+
+/* минимальная высота для периодов в неделю и мес. длиной */
+div.row.weekPeriod table.canban,
+div.row.monthPeriod table.canban{min-height: 160px;}
+
+
+/* ??? */
+div.row td.userColumn div {display: block;}
+
+/* в закрытых периодах прижимаем все к низу (ну типа инвертируем время))
+div.row tr.closedPeriod td {vertical-align: bottom;}*/
+
+/* список элементов внутри колонки пользователя*/
+div.row td.userColumn ul {list-style-type: none; margin: 0; padding: 0;}
+div.row td.userColumn ul li {
+    display: block;
+    margin: 2px;
+    text-align: left;
+    font-size: 12px;
+    padding: 2px;
+    border-radius: 5px;
+    color: #333;
+    position: relative;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+/*ссылочки внутри*/
+div.row td.userColumn ul li a {
+    color: inherit;
+    text-decoration: none;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+
+/* список куда можно бросать должен иметь минимальную высоту (иначе бросить некуда)*/
+div.row td.userColumn ul.droppableBlock {
+    height: 100%;
+    min-height: 70px;
+}
+
+/* добавление нового элемента */
+div.row td.userColumn ul li.createTask,
+div.row td.userColumn ul li.createJob  {
+    padding: 0;
+    border-radius: 5px;
+    border: solid 1px rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.3);
+    text-align: center;
+    cursor: pointer;
+    font-size: 12px;
+    opacity: 40%;
+}
+
+div.row td.userColumn ul li.createTask:hover {opacity:100%; background: orange}
+div.row td.userColumn ul li.createJob.closed:hover {opacity:100%; background: lime}
+div.row td.userColumn ul li.createJob.open:hover {opacity:100%; background: yellow}
+
+
+
+/*просто задача*/
+li.userTask {border: solid 1px #dcdcdc; background: linear-gradient(to bottom,#f9f9f9,#e9e9e9); box-shadow:inset 0 1px 0 0 #ffffff;}
+/* чужая задача */
+li.userTask.dimmedOut   {opacity: 40%;}
+/* подсветка (задача под курсором, родительская, дочерние) */
+div.row td.userColumn ul li.userTask.hovered     {border-color: lime; background: palegreen; color:#333; text-shadow: none}
+div.row td.userColumn ul li.userTask.parentTask  {border-color: orange; background: darkgoldenrod; color:#333; text-shadow: none}
+div.row td.userColumn ul li.userTask.childTask   {border-color: dodgerblue; background: deepskyblue; color:#333; text-shadow: none}
+
+/*тикет*/
+td.userColumn ul li.userTicket {
+    background-image: url('alum0.jpg');
+    min-height: 25px;
+}
+
+li.userJob span.jobToggle {
+    float:right;
+    line-height: 10px;
+    cursor: pointer;
+    display:none;
+    position: absolute;
+    right: 2px;
+    font-size: 16px;
+}
+li.userJob:hover span.jobToggle {display:block}
+li.userJob.closed span.jobToggle:before{content: '\2612'}
+li.userJob.open span.jobToggle:before{content: '\2611'}
+
+
+
+td.userColumn ul li.userJob.closed {
+    color:#306108;
+    border-color:#268a16;
+    box-shadow:inset 0 1px 0 0 #caefab;
+    text-shadow: 0 1px 0 #aade7c;
+    background:linear-gradient(#77d42a, #5cb811);
+}
+
+td.userColumn ul li.userJob.open {
+    color:rgba(106, 59, 20, 1);
+    border-color:rgba(121, 79, 2, 1);
+    box-shadow:inset 0 1px 0 0 #fff6af;
+    text-shadow: 0 1px 0 #ffee66;
+    background:linear-gradient(#ffec64, #ffab23);
+}
+
+/** ШАПКА **/
+/* количество тикетов в шапке */
+div.colHeader {
+    display: block;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    vertical-align: middle;
+    min-height: 20px;
+    /*width: 100%;
+    box-shadow: 0 0 0 2px #828282;*/
+    background:linear-gradient(to bottom, #787878 5%, #2e2e2e 100%);
+    border: none;
+    border-radius:5px;
+    margin:2px;
+}
+
+/* цифры внутри */
+div.row td.userColumn div.colHeader span {
+    text-shadow: 0 0 3px black;
+    margin: 0 10px;
+    cursor: pointer;
+}
+/*кол-во тикетов */
+div.colHeader span.closedTicketsCountLabel    {color: #79bbff;}
+div.colHeader span.openTicketsCountLabel      {color: red;}
+div.colHeader span.closedJobsCountLabel       {color: #5cb811;}
+div.colHeader span.openJobsCountLabel         {color: #ffee66}
+div.colHeader span.closedTasksCountLabel      {color: blueviolet;}
+div.colHeader span.openTasksCountLabel        {color: #e9e9e9;}
+
+
+
+/*дата дедлайна*/
+li.userTicket span.deadline {
+    float:right;
+    vertical-align: bottom;
+    font-size: 11px;
+    line-height: 12px;
+}
+li.userTicket:after {content: " "; clear:both; display: block;}
+
+
+
+td.userColumn ul li.userTask.closed {
+    color:#fff;
+    border-color:#124d77;
+    box-shadow:inset 0 1px 0 0 #54a3f7;
+    text-shadow:0 1px 0 #154682;
+    background:linear-gradient(#007dc1, #0061a7);
+}
+
+
+li.userTicket.semiClosed {
+    box-shadow: inset 0 0 10px 0 lightskyblue;
+    border: 2px solid lightskyblue !important;
+}
+
+td.userColumn ul li.userTicket.closed {
+    /*background: repeating-linear-gradient(0deg, lightblue 0, lightblue 1px, lightskyblue 1px, lightskyblue 2px);*/
+    background:linear-gradient(#79bbff, #378de5);
+    box-shadow:inset 0 1px 0 0 #bbdaf7;
+    text-shadow:0 1px 0 #528ecc;
+    color:#fff;
+    border-color:#84bbf3;
+}
+li.userTicket.closed a {text-decoration: line-through;  color: #666;}
+
+
+
+li.userTask .task-item-updates-inner {
+    display: inline-block;
+    height: 9px;
+    color: white;
+    background: #acacac url(/bitrix/js/tasks/css/images/task-sprite_8.png?2) no-repeat right -119px;
+    margin-left: 2px;
+    padding: 0 2px 0 0;
+    font-size: 12px;
+    line-height: 9px;
+    vertical-align: baseline;
+}
+
+li.userTask .task-title-comments {
+    display: inline-block;
+    height: 11px;
+    padding-left: 12px;
+    background: url(/bitrix/js/tasks/css/images/task-sprite_8.png?2) no-repeat -14px -103px;
+    font-size: 9px;
+    line-height: 9px;
+    color: #7f7f7f!important;
+    text-decoration: none!important;
+    vertical-align: middle;
+    outline: 0;
+}
+
+li.userTask .task-item-updates {
+    margin-left: 2px;
+    display: inline-block;
+    height: 9px;
+    background: #acacac url(/bitrix/js/tasks/css/images/task-sprite_8.png?2) no-repeat 0 -119px;
+    outline: 0;
+    cursor: pointer;
+    text-decoration: none!important;
+    line-height: 9px;
+    vertical-align: middle;
+}
+
+li.userTask .userTaskFooter,
+li.userTicket .userTaskFooter{
+    display: block;
+    width: 100%;
+    font-size: 8pt;
+    opacity: 70%;
+}
+
+li.userTask .userTaskFooter .msgStatus,
+li.userTask .userTaskFooter .status {
+    float: right;
+    display: inline;
+}
+
+
+li.userTask.closeMe {
+    border: 2px solid limegreen;
+    padding: 1px;
+}
+
+
+
+li.userTicket.yellow,
+li.userTicket.red
+{
+    border: solid 2px red;
+    padding: 1px;
+}
+
+li.userTicket.green,
+li.userTicket.green_s
+{
+    border: solid 2px limegreen;
+    padding: 1px;
+}
+
+li.userJob form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    resize: none;
+    min-height: 14px;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0;
+}

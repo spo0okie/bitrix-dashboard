@@ -1,0 +1,128 @@
+/*
+ НАЗВАНИЕ ПЕРИОДОВ СЛЕВА
+*/
+div.rowTitleCell {
+    width: 20px;
+    position: relative;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* НЕДЕЛИ и МЕСЯЦЫ заглавными буквами */
+div.weekPeriod div.rowTitleCell,
+div.monthPeriod div.rowTitleCell {text-transform: uppercase;}
+
+div.rowTitleCell.lastRow {
+    margin-top: 20px;
+    vertical-align: top;
+}
+
+/* Текст заголовка */
+div.rowTitleCell h3 {
+    font-size: larger;
+    writing-mode: vertical-rl;
+    margin: 0;
+    transform: rotate(-180deg);
+}
+
+
+/* СТРОКА ЗАДАЧ */
+div.row {
+    width: 100%;
+    padding: 0;
+    border-style: solid;
+    display: table; /*min-height: 160px;*/box-sizing: border-box;
+}
+
+div.row.weekPeriod,div.row.monthPeriod {
+    margin:2px 0;
+    border-width: 4px;
+    border-radius: 3px;
+
+}
+
+div.row.day0 {
+    margin:2px 0 0 0;
+    border-width: 4px 4px 1px 4px;
+    border-radius: 2px 2px 0 0;
+}
+
+div.row.day2,
+div.row.day3,
+div.row.day4,
+div.row.day5,
+div.row.day1 {
+    margin: 0;
+    border-width: 1px 4px;
+    border-radius: 0;
+}
+
+div.row.day6 {
+    margin:0 0 2px 0;
+    border-width: 1px 4px 4px 4px;
+    border-radius: 0 0 2px 2px;
+}
+
+div.row div {display: table-cell; border-collapse: collapse}
+
+
+
+div.row.period0 {border-color: yellow;}
+div.row.period0 div.rowTitleCell,div.row.period0 tr.periodHeader {background-color: yellow}
+
+div.row.period1 {border-color: greenyellow;}
+div.row.period1 div.rowTitleCell, div.row.period1 tr.periodHeader {background-color: greenyellow}
+div.row.period2 {border-color: limegreen}
+div.row.period2 div.rowTitleCell, div.row.period2 tr.periodHeader {background-color: limegreen}
+div.row.period3 {border-color: deepskyblue}
+div.row.period3 div.rowTitleCell, div.row.period3 tr.periodHeader {background-color: deepskyblue}
+div.row.period4 {border-color: royalblue}
+div.row.period4 div.rowTitleCell, div.row.period4 tr.periodHeader {background-color: royalblue; color: white}
+div.row.period5 {border-color: blueviolet}
+div.row.period5 div.rowTitleCell, div.row.period5 tr.periodHeader {background-color: blueviolet; color: white}
+div.row.period6 {border-color: darkslateblue}
+div.row.period6 div.rowTitleCell, div.row.period6 tr.periodHeader {background-color: darkslateblue; color: white}
+
+
+/*однопользовательская раскладка*/
+
+div.calendarRow.vertical div.row {
+    display: table-cell;
+    box-sizing: border-box;
+    width: 14%;
+    vertical-align: top;
+}
+
+div.calendarRow.vertical div.row div {display: block; border-collapse: collapse}
+
+div.calendarRow.vertical div.row div.rowTitleCell {width: auto; display: block}
+div.calendarRow.vertical div.row div.rowTitleCell h3 {writing-mode: inherit; transform: none;}
+
+div.calendarRow {
+    padding: 0;
+    border: 0;
+    margin: 0;
+}
+
+div.calendarRow.vertical {width: 88%; vertical-align: top; display: table;}
+div.calendarRow.bucket.vertical {
+    width: 12%;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100%;
+    display: block;
+    overflow: auto;
+}
+
+div.calendarRow.vertical div.row.day0,
+div.calendarRow.vertical div.row.day1,
+div.calendarRow.vertical div.row.day2,
+div.calendarRow.vertical div.row.day3,
+div.calendarRow.vertical div.row.day4,
+div.calendarRow.vertical div.row.day5,
+div.calendarRow.vertical div.row.day6 {
+    margin:0 0 2px 0;
+    border-width: 2px;
+    border-radius: 0 0 2px 2px;
+}
