@@ -1,4 +1,4 @@
-let $globalJobApiUri='/reviakin/x0/api/job';
+let $globalJobApiUri=$globalApiUri+'job';
 
 function userJobCreateEmptyItem()
 {
@@ -59,10 +59,12 @@ function userJobCloseToggle($job) {
         $job.attr('data-job-end',null)
         if (!$job.attr('data-job-start')) {
             $job.attr('data-job-start', timestamp)
+            $job.attr('data-timestamp', timestamp)
         }
     } else {
         $job.removeClass('open').addClass('closed');
         $job.attr('data-job-end', timestamp)
+        $job.attr('data-timestamp', timestamp)
     }
     $.ajax({
         url: $globalJobApiUri+'/update/'+$jobId,
@@ -282,7 +284,7 @@ function jobOnStopDrag($item,$oldContainer,$newContainer) {
 
     //let $newUserName=   $newContainer.attr('username');
     let $newUserId=     $newTd.attr('data-user-id');
-    let $newDate=       $newPeriod.attr('data-unix-start-date');
+    let $newDate=       $newPeriod.attr('data-unix-end-date')>0?$newPeriod.attr('data-unix-start-date'):'';
 
     let newSorting=getNewItemSortIndex($item);
     console.log('placing at sort='+newSorting);
@@ -403,12 +405,12 @@ function loadJobs(from,to,users,onComplete=null) {
     $.ajax({
         url: $globalJobApiUri+'/load/'+from+'/'+to+'/'+users.join(','),
         error: function () {
-            console.log('error loading')
+            console.log('error loading jobs')
             if (onComplete) onComplete();
         },
         success: function (data) {
             //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
-            console.log('got items')
+            //console.log('got items')
             let json = $.parseJSON(data);
             json.forEach(function(item){userJobInitItemData(item)});
             if (onComplete) onComplete();

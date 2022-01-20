@@ -11,7 +11,24 @@ function unixTimeToMyDate(time) {
     const date = $.datepicker.formatDate( "dd.mm.yy", nd);
     return isNaN(dayOfWeek) ? date :
         date+'('+(['вс','пн','вт','ср','чт','пт','сб','вс'][dayOfWeek])+')';
+}
 
+function unixTimeToMyDateTime(time) {
+    let nd = new Date(time);
+    const dayOfWeek = nd.getDay();
+
+    let date = $.datepicker.formatDate( "dd.mm.yy", nd);
+    if (!isNaN(dayOfWeek))
+        date+='('+(['вс','пн','вт','ср','чт','пт','сб','вс'][dayOfWeek])+')';
+
+    let hours = nd.getHours();
+    if (hours<10) hours='0'+hours;
+
+    let minutes = nd.getMinutes();
+    if (minutes<10) minutes='0'+minutes;
+
+
+    return date+' '+hours+':'+minutes;
 }
 
 function unixTimeToMyShortDate(time) {
@@ -54,21 +71,19 @@ function bitrixDateTimeToJS(time) {
     }
 }
 
-//то же самое только выкидывает время, оставляет только дату
-function bitrixDateToJS(time) {
-    if (typeof time !== 'string') return null;
-    let $tokens=time.split(' ');
-    return $tokens[0].split('.').reverse().join('-')+'T00:00:00+03:00';
-}
-
 function bitrixDateTimeToUnix(time) {
     if (typeof time !== 'string') return null;
     return Date.parse(bitrixDateTimeToJS(time));
 }
 
-function bitrixDateToUnix(time) {
-    if (typeof time !== 'string') return null;
-    return Date.parse(bitrixDateToJS(time));
+function bitrixDateToUnix(date) {
+    if (typeof date !== 'string') return null;
+    let tokens=date.split(' ')[0].split('.');
+    let d=new Date();
+    //console.log(Number(tokens[2])+'-'+Number(tokens[1])+'-'+Number(tokens[0]));
+    d.setFullYear(Number(tokens[2]),Number(tokens[1])-1,Number(tokens[0]));
+    d.setHours(0,0,0,0);
+    return d.getTime();
 }
 
 function unixTimeToBitrixDate(time) {
@@ -163,66 +178,6 @@ function scrollToAnchor(anchor) {
         console.log("No luck to find anchor")
 }
 
-
-$(window).scroll(function(e){
-    //console.log(e);
-    if ($globScrollBlock>0) return;
-    let visibleTop = $(this).scrollTop()+$globBodyMargin; // or the value for the #navigation height
-    let visibleBottom = $(this).scrollTop()+$globBodyMargin+$(window).height(); // or the value for the #navigation height
-    let fromTop=visibleTop+$(window).height()/2;
-    let curPos=null;
-    $('div.row[data-unix-start-date]').each(function(i,item){
-        //console.log(item);
-        if (
-            $(item).offset()
-            &&
-            ($(item).offset().top <= fromTop)
-            &&
-            (
-                ($(item).offset().top >= visibleTop)
-                ||
-                ($(item).offset().top + $(item).height() >= visibleBottom)
-            )
-        ) {
-            fromTop=$(item).offset().top;
-            curPos=$(item);
-
-        }
-    });
-
-    if (curPos !== null) {
-        let id = curPos.attr('id');
-        if ($globScrollPos !== id) {
-            $globScrollPos = id;
-            updatePageUrlState();
-        }
-    }
-});
-
-
-$(document).ready(function(){
-    //setTimeout(attachAllTTips,500);
-
-    $globBodyMargin=window.getComputedStyle(document.body).marginTop;
-    $globBodyMargin=Number($globBodyMargin.slice(0,$globBodyMargin.length-2));
-
-    //console.log(document.documentElement.clientHeight);
-    releaseScrollBlock(true);
-
-
-    //$('ul.droppableBlock').disableSelection();
-    /*
-    "handle" - click down
-    "start" - start of dragging - you can add a class here
-    "activate"
-    "sort" - change of the item position
-    "change" – change of the items order
-    "beforeStop" - release of a mouse button
-    "deactivate"
-    "out"
-    "stop" - you can remove a class here
-     */
-});
 
 /**
  * Сортировка открытых элементов (такая логика годится только для открытых)
@@ -387,4 +342,64 @@ function getUlMinSortingIndex(ul) {
     if (min===null) return 32768;
     return min;
 }
+
+$(window).scroll(function(e){
+    //console.log(e);
+    if ($globScrollBlock>0) return;
+    let visibleTop = $(this).scrollTop()+$globBodyMargin; // or the value for the #navigation height
+    let visibleBottom = $(this).scrollTop()+$globBodyMargin+$(window).height(); // or the value for the #navigation height
+    let fromTop=visibleTop+$(window).height()/2;
+    let curPos=null;
+    $('div.row[data-unix-start-date]').each(function(i,item){
+        //console.log(item);
+        if (
+            $(item).offset()
+            &&
+            ($(item).offset().top <= fromTop)
+            &&
+            (
+                ($(item).offset().top >= visibleTop)
+                ||
+                ($(item).offset().top + $(item).height() >= visibleBottom)
+            )
+        ) {
+            fromTop=$(item).offset().top;
+            curPos=$(item);
+
+        }
+    });
+
+    if (curPos !== null) {
+        let id = curPos.attr('id');
+        if ($globScrollPos !== id) {
+            $globScrollPos = id;
+            updatePageUrlState();
+        }
+    }
+});
+
+
+$(document).ready(function(){
+    //setTimeout(attachAllTTips,500);
+
+    $globBodyMargin=window.getComputedStyle(document.body).marginTop;
+    $globBodyMargin=Number($globBodyMargin.slice(0,$globBodyMargin.length-2));
+
+    //console.log(document.documentElement.clientHeight);
+    releaseScrollBlock(true);
+
+
+    //$('ul.droppableBlock').disableSelection();
+    /*
+    "handle" - click down
+    "start" - start of dragging - you can add a class here
+    "activate"
+    "sort" - change of the item position
+    "change" – change of the items order
+    "beforeStop" - release of a mouse button
+    "deactivate"
+    "out"
+    "stop" - you can remove a class here
+     */
+});
 

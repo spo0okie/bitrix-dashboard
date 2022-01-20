@@ -1,6 +1,54 @@
 let $globalUserLayout=0;
 let $maxScrollBlock=0;
 
+function renderPageHeader() {
+
+    let $closedToggle=$('<span id="globToggleClosed" class="clickable" title="Отображать закрытые задачи" onclick="pageToggleClosedTasks()">[^]</span>');
+    let $ticketToggle=$('<span id="globToggleTickets" class="clickable" title="Отображать тикеты" onclick="pageToggleTickets()">[-]</span>');
+    let $jobToggle=$('<span id="globToggleJobs" class="clickable" title="Отображать работы" onclick="pageToggleJobs()">[*]</span>');
+    let $participantsToggle=$('<span id="globToggleParticipants" class="clickable" title="Отображать соисполнителей" onclick="pageToggleParticipants()">[&lt;&gt;]</span>');
+
+    let $bgSpan=$('<span></span>');
+    for (let i=0; i<3; i++) {
+        $bgSpan.append('<span id="switchBg'+i+'" class="clickable"  onclick="pageSwitchBg('+i+')">[bg'+i+']</span>');
+    }
+
+    let $toolPanel=$('<span class="toolsPanel2"></span>')
+        .append($closedToggle)
+        .append($ticketToggle)
+        .append($jobToggle)
+        .append($participantsToggle)
+        .append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;')
+        .append($bgSpan);
+
+    let $toolBarTd=$('<td colspan="'+$globUserList.size+'"></td>')
+        .append($toolPanel);
+
+    let $toolBarTr=$('<tr class="pageToolBar"></tr>')
+        .append($toolBarTd);
+
+
+
+    let $usersTr=$('<tr></tr>');
+    $globUserList.forEach(function(name,id) {
+        let $td=$('<td data-user-id='+id+' class="userColumn">'+name+'</td>');
+        $td.click(function(e){
+            e.stopPropagation();
+            toggleUserLayout(id);
+        });
+        $usersTr.append($td);
+    });
+
+    let $table=$('<table></table>')
+        .append($toolBarTr)
+        .append($usersTr);
+
+    return $('<div class="row horizontal headerRow"></div>')
+        .append('<div class="rowTitleCell">&nbsp;</div>')
+        .append($table);
+}
+
+
 function updateLoadingGauge() {
     let $header=$('div.headerRow');
     if ($maxScrollBlock) {

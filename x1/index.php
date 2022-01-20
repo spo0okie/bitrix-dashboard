@@ -16,14 +16,13 @@
  * @var $prevMonday2 integer
  * @var $prevSunday2 integer
  */
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/bx_root.php");
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 
 require_once "conf.php";
 
 $jsUsers=[];
-foreach ($canban_users as $idx=>$name)
-	$jsUsers[]="[$idx,'$name']";
-
-require('bootstrap.php');
+foreach ($canban_users as $idx=>$name) $jsUsers[]="[$idx,'$name']";
 
 ?>
 
@@ -32,7 +31,12 @@ require('bootstrap.php');
 <html lang="ru">
 <head>
     <?php $APPLICATION->ShowHead();  ?>
-
+	<script>
+		let $globalApiUri='/reviakin/x1/api/';
+        let $globAuditorsIds="<?= $auditors_ids ?>";
+        let $globGroupId="<?= $group_id ?>";
+        let $globUserList=new Map([<?= implode(',',$jsUsers) ?>]);
+	</script>
     <style type="text/css">
         td.userColumn {
             width:<?= 99/count($canban_users) ?>%;
@@ -62,40 +66,32 @@ require('bootstrap.php');
 
 
 <!-- // ШАПКА С ПОЛЬЗОВАТЕЛЯМИ -->
-<div class="row horizontal headerRow">
-    <div class="rowTitleCell">&nbsp;</div>
-    <table class="">
-	    <tr class="pageToolBar">
-		    <td colspan="<?= count($canban_users) ?>">
-			    <!--  ПАНЕЛЬКА С КНОПКАМИ -->
-			    <span class="toolsPanel2">
-				    <span id="globToggleClosed" class="clickable" title="Отображать закрытые задачи" onclick="pageToggleClosedTasks()">[^]</span>
-				    <span id="globToggleTickets" class="clickable" title="Отображать тикеты" onclick="pageToggleTickets()">[-]</span>
-				    <span id="globToggleJobs" class="clickable" title="Отображать работы" onclick="pageToggleJobs()">[*]</span>
-				    <span id="globToggleParticipants" class="clickable" title="Отображать соисполнителей" onclick="pageToggleParticipants()">[&lt;&gt;]</span>
-			    </span>
-			    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			    <span>
-				    <span id="switchBg0" class="clickable"  onclick="pageSwitchBg(0)">[bg0]</span>
-				    <span id="switchBg1" class="clickable"  onclick="pageSwitchBg(1)">[bg1]</span>
-				    <span id="switchBg2" class="clickable"  onclick="pageSwitchBg(2)">[bg2]</span>
-			    </span>
-		    </td>
-	    </tr>
-        <?= renderRowUsers() ?>
-    </table>
-</div>
+
 
 
 
 <script>
     pageSwitchBg();
+
     const d = new Date();
-    let $globMonday0=<?= $monday1*1000; ?>;
-    let $globSunday0=<?= $sunday1*1000; ?>;
     let $globWeekDay=(d.getDay()-1 < 0)?6:d.getDay()-1;
-    let $globAuditorsIds="<?= $auditors_ids ?>";
-    let $globGroupId="<?= $group_id ?>";
+
+    let dMonday0 = new Date();
+    dMonday0.setDate(d.getDate()-$globWeekDay);
+    dMonday0.setHours(0,0,0,0);
+
+    let dSunday0 = new Date();
+    dSunday0.setDate(d.getDate()-$globWeekDay+6);
+    dSunday0.setHours(23,59,59,0);
+
+    //старые переменные. чтобы не переписывать весь код, продолжаем работать с ними
+    let $globMonday0=dMonday0.getTime();
+    let $globSunday0=dSunday0.getTime()
+
+    //Проверяем (успешно), что полученные временные границы находятся в нашем (браузера) часовом поясе
+    console.log('Monday: '+unixTimeToMyDateTime($globMonday0)+' // '+$globMonday0/1000);
+    console.log('Sunday: '+unixTimeToMyDateTime($globSunday0)+' // '+$globSunday0/1000);
+    console.log('TZ: '+d.getTimezoneOffset());
     let $globShowClosed=(Cookies.get('globShowClosed')==='true');
     let $globShowJobs=(Cookies.get('globShowJobs')==='true');
     let $globShowTickets=(Cookies.get('globShowTickets')==='true');
@@ -108,11 +104,7 @@ require('bootstrap.php');
     //console.log($globShowClosed)
     //console.log($globShowClosed?'showing closed':'hiding closed');
 
-    let $globUserList=new Map([<?= implode(',',$jsUsers) ?>]);
-    /*$body.append(renderTeamWeek(-1));
-    $body.append(renderTeamWeek(0));
-    $body.append(renderTeamWeek(1));
-    loadJobs($globMonday0/1000-86400*7,$globSunday0/1000+86400*7,[...$globUserList.keys()]);*/
+    $('body').append(renderPageHeader());
     loadTeamWeek(-1);
     loadTeamWeek(0);
     loadTeamWeek(1);

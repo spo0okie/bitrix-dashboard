@@ -1,4 +1,4 @@
-let $globalAbsentsApiUri='/reviakin/x0/api/absents';
+let $globalAbsentsApiUri=$globalApiUri+'absents';
 let $globAbsents=new Map([]);
 
 /*{
@@ -90,9 +90,10 @@ function intervalsSort(intervals)
 function userPeriodAbsents(start,end,user) {
     //если на пользователя нет отсутствий, то
     const empty= new Map([['background','none'],['title','']]);
-    start+=$globServerTimeShift/1000;
-    if (end) {end+=$globServerTimeShift/1000} else {end=start+86400*7;}
-    console.log('userPeriodAbsents('+start+','+end+','+user+')');
+    let shift=-d.getTimezoneOffset()*60
+    start+=shift;
+    if (end) {end+=shift} else {end=start+86400*7;}
+    //console.log('userPeriodAbsents('+start+','+end+','+user+')');
     if (!$globAbsents.has(user)) {
         //console.log('no absents loaded for user '+user);
         return empty;
@@ -117,21 +118,21 @@ function userPeriodAbsents(start,end,user) {
     // перебор по элементам в формате [ключ, значение]
     for (let item of userAbsents) {
         //console.log(item[1]);
-        let from=Math.floor((item[1]['UNIX_FROM']+$globServerTimeShift)/86400000);
-        let to=Math.floor((item[1]['UNIX_TO']+24*3600-1+$globServerTimeShift)/86400000);
+        let from=Math.floor((item[1]['UNIX_FROM']+shift*1000)/86400000);
+        let to=Math.floor((item[1]['UNIX_TO']+24*3600-1+shift*1000)/86400000);
 
-        console.log('Checking for absent ['+from+','+to+'] to intersect ['+work_start+','+work_end+']    //    ' +
-        '['+unixTimeToMyDate(from*86400000)+','+unixTimeToMyDate(to*86400000)+'] intersect with ['+unixTimeToMyDate(work_start*86400000)+','+unixTimeToMyDate(work_end*86400000)+']');
+        //console.log('Checking for absent ['+from+','+to+'] to intersect ['+work_start+','+work_end+']    //    ' +
+        //'['+unixTimeToMyDate(from*86400000)+','+unixTimeToMyDate(to*86400000)+'] intersect with ['+unixTimeToMyDate(work_start*86400000)+','+unixTimeToMyDate(work_end*86400000)+']');
 
         if (from>end_day) continue; //все что началось позже обозримого периода не интересно
         if (to<start_day) continue; //все что закончилось раньше нашего периода - тоже
 
         //если полностью покрывает обозримый период
         if (from<=work_start && to>=work_end) {
-            console.log('full period absent for user '+user);
+            //console.log('full period absent for user '+user);
             return new Map([
                 ['background',busy],
-                ['title','Полностью отсутствует '+unixTimeToMyDate(from*86400000)+' - '+unixTimeToMyDate(to*86400000)]
+                ['title','Полностью отсутствует '+unixTimeToMyDate(from*86400000-shift*1000)+' - '+unixTimeToMyDate(to*86400000-shift*1000)]
             ]);
         }
 
@@ -143,7 +144,7 @@ function userPeriodAbsents(start,end,user) {
         let interval=[from,to];
 
         //добавляем его в TTIP
-        titles.push(unixTimeToMyDate(from*86400000)+' - '+unixTimeToMyDate(to*86400000));
+        titles.push(unixTimeToMyDate(from*86400000-shift*1000)+' - '+unixTimeToMyDate(to*86400000-shift*1000));
 
         //объединяем с соседними и пересекающимися интервалами
         if (periods.length) {
@@ -162,7 +163,7 @@ function userPeriodAbsents(start,end,user) {
     }
 
     if (!periods.length) {
-        console.log('no absents found in period for user '+user);
+        //console.log('no absents found in period for user '+user);
         return empty;
     }
 
@@ -195,8 +196,9 @@ function userPeriodAbsents(start,end,user) {
             css.push(avail+' 100%');
         }
         style='linear-gradient( to bottom, '+css.join(', ')+')';
-        console.log(periods);
-        console.log(style);
+        //console.log(periods);
+        //console.log(titles);
+        //console.log(style);
     } else {
         style=null;
     }
@@ -221,6 +223,7 @@ function updateUserPeriodColumnAbsents($td) {
 function updateUserHeaderAbsents(user) {
     if (!$globAbsents.has(user)) return;
     let absents=$globAbsents.get(user)
+    let shift=-d.getTimezoneOffset()*60*1000;
     let userClass='';
     let daysToAbsence=99999;
     let actualAbsence='';
@@ -228,19 +231,19 @@ function updateUserHeaderAbsents(user) {
     //ищем отсутствия пользователя
 
     for (let item of absents) {
-        console.log(item[1]);
-        let to=Math.floor((item[1]['UNIX_TO']+$globServerTimeShift)/86400000);
-        let today=Math.floor((Date.now())/86400000);
+        //console.log(item[1]);
+        let to=Math.floor((item[1]['UNIX_TO']+shift)/86400000);
+        let today=Math.floor((Date.now()+shift)/86400000);
         if (to>=today) {
             //если мы еще не отсутствуем (0)
             if (daysToAbsence) {
-                let from=Math.floor((item[1]['UNIX_FROM']+$globServerTimeShift)/86400000);
+                let from=Math.floor((item[1]['UNIX_FROM']+shift)/86400000);
                 //суток до отпуска/отсутствия
 
                 let test=Math.max(from-today, 0);
                 if (test < daysToAbsence) {
                     daysToAbsence=test;
-                    actualAbsence=unixTimeToMyDate(from*86400000)+' - '+unixTimeToMyDate(to*86400000);
+                    actualAbsence=unixTimeToMyDate(from*86400000-shift)+' - '+unixTimeToMyDate(to*86400000-shift);
                 }
             }
         } //else console.log ()
@@ -280,14 +283,14 @@ function userAbsentsUpdateFromJson(userId)
 
 
 function userAbsentsInitItemData(data) {
-    data['UNIX_FROM']=bitrixDateTimeToUnix(data['ACTIVE_FROM']);
-    data['UNIX_TO']=bitrixDateTimeToUnix(data['ACTIVE_TO']);
+    data['UNIX_FROM']=bitrixDateToUnix(data['ACTIVE_FROM']);
+    data['UNIX_TO']=bitrixDateToUnix(data['ACTIVE_TO']);
     let userId=Number(data['PROPERTY_USER_VALUE']);
     //либо вытаскиваем набор отсутствий пользователя из общего набора либо создаем пустой если его еще нет
     let userAbsents=($globAbsents.has(userId))?$globAbsents.get(userId):new Map();
     userAbsents.set(data['ID'],data)
     $globAbsents.set(userId,userAbsents);
-    console.log('got absence for user '+userId);
+    console.log('got absence for user '+userId+": "+data['ACTIVE_FROM']+' - '+data['ACTIVE_TO']);
     userAbsentsUpdateFromJson(userId);
 }
 
@@ -303,7 +306,7 @@ function loadAbsents(from,to,users,onComplete=null) {
         },
         success: function (data) {
             //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
-            console.log('got items')
+            //console.log('got items')
             let json = $.parseJSON(data);
             json.forEach(function(item){userAbsentsInitItemData(item)});
             if (onComplete) onComplete();

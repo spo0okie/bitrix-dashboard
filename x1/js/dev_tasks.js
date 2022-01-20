@@ -1,4 +1,4 @@
-let $globalTaskApiUri='/reviakin/x0/api/task';
+let $globalTaskApiUri=$globalApiUri+'task';
 
 
 function taskRenderMouseOver($elem) {
@@ -54,15 +54,16 @@ function taskOnStopDrag($item,$oldContainer,$newContainer) {
 
 
     let $oldUserId=     $oldTd.attr('data-user-id');
-    let $oldDate=       $oldPeriod.attr('data-unix-start-date');
+    let $oldDate=       $oldPeriod.attr('data-unix-end-date')>0?  //если в этом периоде есть крайний срок,
+        Number($oldPeriod.attr('data-unix-end-date'))-7*3600*1000: //то ориентируемся на него
+        'null';
 
     //let $newUserName=   $newContainer.attr('username');
     let $newUserName=   $newTd.attr('data-user-name');
     let $newUserId=     $newTd.attr('data-user-id');
-    let $newDate=       Number($newPeriod.attr('data-unix-start-date'));
-
-    if ($newPeriod.attr('data-unix-end-date')==null)
-        $newDate='null';
+    let $newDate=       $newPeriod.attr('data-unix-end-date')>0?  //если в этом периоде есть крайний срок,
+        Number($newPeriod.attr('data-unix-end-date'))-7*3600*1000: //то ориентируемся на него
+        'null';
 
     let newSorting=getNewItemSortIndex($item);
     console.log('placing at date='+$newDate+', sort='+newSorting);
@@ -81,7 +82,7 @@ function taskOnStopDrag($item,$oldContainer,$newContainer) {
         if ($newDate=='null') {
             $confirm+="Срок выполнения убираем (в долгий ящик)\n"
         } else {
-            $confirm+="Срок выполнения на 17:00 "+unixTimeToMyDate($newDate)+"\n"
+            $confirm+="Срок выполнения на "+unixTimeToMyDateTime($newDate)+"\n"
         }
         $needConfirm=true;
         $changes.push('deadline='+$newDate/1000);
@@ -426,11 +427,11 @@ function loadTaskById(id) {
     $.ajax({
         url: $globalTaskApiUri+'/get/'+id,
         error: function () {
-            console.log('error loading task')
+            console.log('error loading tasks')
         },
         success: function (data) {
             //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
-            console.log('got task item')
+            //console.log('got task item')
             let json = $.parseJSON(data);
             json.forEach(function(item){userTaskInitItemsData(item)});
             //scrollToAnchor($globScrollPos);

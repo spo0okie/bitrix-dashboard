@@ -98,7 +98,7 @@ class controller_job {
 
 		return $jobs;
 	}
-	
+
 	public function action_load(){
 		if (is_null($from=router::getRoute(3, 'from')))
 			router::haltJson(static::MSG_NO_FROM);
@@ -111,6 +111,21 @@ class controller_job {
 			router::haltJson(static::MSG_NO_USERS);
 
 		echo json_encode(static::loadPeriodUsers($from, $to,explode(',',$users)),JSON_UNESCAPED_UNICODE);
+	}
+
+	public function action_get(){
+		if (is_null($id=router::getRoute(3, 'id')))
+			router::haltJson(static::MSG_NO_TASK_ID);
+
+		$search = CIBlockElement::GetById($id);
+
+		$jobs=[];
+
+		while ($item = $search->GetNextElement()) {
+			$jobs[]=$item->fields;
+		}
+
+		echo json_encode($jobs,JSON_UNESCAPED_UNICODE);
 	}
 
 	function action_delete() {

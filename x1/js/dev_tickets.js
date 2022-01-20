@@ -1,4 +1,4 @@
-let $globalTicketApiUri='/reviakin/x0/api/ticket';
+let $globalTicketApiUri=$globalApiUri+'ticket';
 
 
 function userTicketOnStopDrag($item,$oldContainer,$newContainer) {
@@ -210,11 +210,11 @@ function loadTicketById(id) {
     $.ajax({
         url: $globalTicketApiUri+'/get/'+id,
         error: function () {
-            console.log('error loading ticket')
+            console.log('error loading tickets')
         },
         success: function (data) {
             //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
-            console.log('got ticket item')
+            //console.log('got ticket item')
             let json = $.parseJSON(data);
             json.forEach(function(item){userTicketInitItemData(item)});
             //scrollToAnchor($globScrollPos);

@@ -9,7 +9,32 @@ class controller_task {
 	const MSG_NO_TO='NO_TO_SET';
 	const MSG_NO_USERS='NO_USER_LIST_SET';
 	const MSG_NO_TASK_ID='NO_TASK_ID_SET';
+	static $arViewedDates=[];
 
+
+	static public function initTaskData($arTask) {
+		global $globalTzOffset;
+		static::$arViewedDates[$arTask['ID']] = $arTask['VIEWED_DATE'] ? $arTask['VIEWED_DATE'] : $arTask['CREATED_DATE'];
+
+		//перебираем соисполнителей задачи
+		$resMembers = CTaskMembers::GetList(array(), array("TASK_ID" => $arTask['ID']));
+		while ($arMember = $resMembers->Fetch())
+			if (
+				($arMember["TYPE"] == "A" ) //упер из метода GetByID. Тот который GetList по умолчанию не вытягивает соисполнителей
+				&&
+				($arTask['RESPONSIBLE_ID']!=$arMember["USER_ID"]) //на всякий случай проверяем, что у нас соисполнитель не является ответственным
+			) {
+				$arTask["ACCOMPLICES"][] = $arMember["USER_ID"];
+			}
+		$arTask['tzShift']=$globalTzOffset;
+		return $arTask;
+	}
+
+	static public function initTaskUpdates(&$tasks) {
+		$arUpdatesCount = CTasks::GetUpdatesCount(static::$arViewedDates);
+		foreach ($arUpdatesCount as $i => $count)
+			$tasks[$i]['UPDATES_COUNT']=(integer)$count;
+	}
 
 	/**
 	 * загружает работы переданных пользователей за указанный период
@@ -83,27 +108,11 @@ class controller_task {
 
 		$res=CTasks::GetList(["DEADLINE" => "ASC"],$filter);
 		while ($arTask = $res->GetNext()) {
-			$arViewedDates[$arTask['ID']] = $arTask['VIEWED_DATE'] ? $arTask['VIEWED_DATE'] : $arTask['CREATED_DATE'];
-
-			//перебираем соисполнителей задачи
-			$rsMembers = CTaskMembers::GetList(array(), array("TASK_ID" => $arTask['ID']));
-			while ($arMember = $rsMembers->Fetch())
-				if (
-					($arMember["TYPE"] == "A" ) //упер из метода GetByID. Тот который GetList по умолчанию не вытягивает соисполнителей
-					&&
-					($arTask['RESPONSIBLE_ID']!=$arMember["USER_ID"]) //на всякий случай проверяем, что у нас соисполнитель не является ответственным
-				) {
-					$arTask["ACCOMPLICES"][] = $arMember["USER_ID"];
-					//$tasks[$arMember["USER_ID"]][]=$arTask;
-				}
-
 			//кладем задачу пользователю в табличку
-			$tasks[$arTask['ID']]=$arTask;
+			$tasks[$arTask['ID']]=static::initTaskData($arTask);
 		}
 
-		$arUpdatesCount = CTasks::GetUpdatesCount($arViewedDates);
-		foreach ($arUpdatesCount as $i => $count)
-			$tasks[$i]['UPDATES_COUNT']=(integer)$count;
+		static::initTaskUpdates($tasks);
 
 		return array_values($tasks);
 	}
@@ -126,14 +135,16 @@ class controller_task {
 		if (is_null($id=router::getRoute(3, 'id')))
 			router::haltJson(static::MSG_NO_TASK_ID);
 
-		$rsTask = CTasks::GetByID($id);
-		if ($arTask = $rsTask->GetNext())
-		{
-			echo json_encode([$arTask],JSON_UNESCAPED_UNICODE);
+		$tasks=[];
+		$resTasks = CTasks::GetByID($id);
+		if ($arTask = $resTasks->GetNext()) {
+			$tasks[$arTask['ID']]=static::initTaskData($arTask);
 		} else {
 			router::haltJson("Error loading Task");
 		}
 
+		static::initTaskUpdates($tasks);
+		echo json_encode(array_values($tasks),JSON_UNESCAPED_UNICODE);
 	}
 
 	function action_update() {
