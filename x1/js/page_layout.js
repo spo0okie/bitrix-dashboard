@@ -592,6 +592,8 @@ function placeCanbanItemCorrect($li) {
         canBanSortUl($ul);
         updateUserPeriodColumnTotals($ul.parent('td.userColumn'));
         if ($oldTd.length) updateUserPeriodColumnTotals($oldTd);
+    } else {
+        $li.remove();
     }
 }
 
