@@ -84,9 +84,13 @@ foreach ($canban_users as $idx=>$name) $jsUsers[]="[$idx,'$name']";
     dSunday0.setDate(d.getDate()-$globWeekDay+6);
     dSunday0.setHours(23,59,59,0);
 
+    let dToday = new Date();
+    dToday.setHours(0,0,0,0);
+
     //старые переменные. чтобы не переписывать весь код, продолжаем работать с ними
     let $globMonday0=dMonday0.getTime();
     let $globSunday0=dSunday0.getTime()
+    let $globToday=dToday.getTime()
 
     //Проверяем (успешно), что полученные временные границы находятся в нашем (браузера) часовом поясе
     console.log('Monday: '+unixTimeToMyDateTime($globMonday0)+' // '+$globMonday0/1000);

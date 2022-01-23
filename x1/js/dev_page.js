@@ -178,6 +178,16 @@ function scrollToAnchor(anchor) {
         console.log("No luck to find anchor")
 }
 
+function canBanSortItemsById(a,b) {
+    let sortingA=Number($(a).attr('data-item-id'));
+    let sortingB=Number($(b).attr('data-item-id'));
+    if (isNaN(sortingA)) sortingA=0;
+    if (isNaN(sortingB)) sortingB=0;
+    if (sortingA===sortingB)
+        return 0
+    else
+        return (sortingA < sortingB) ? 1:-1;
+}
 
 /**
  * Сортировка открытых элементов (такая логика годится только для открытых)
@@ -194,7 +204,7 @@ function canBanSortOpenItems(a,b) {
     if (sortingA || sortingB) {
         if (sortingA===sortingB) {
             //console.log('sorting '+sortingA+' equals '+sortingB);
-            return 0
+            return canBanSortItemsById(a,b);
         }
         //console.log('sorting '+sortingA+' vs '+sortingB);
         return (sortingA < sortingB) ? 1:-1;
@@ -204,7 +214,7 @@ function canBanSortOpenItems(a,b) {
     let timeMarkB=Number($(b).attr('data-timestamp'));
 
     //если дата отличается то получается что, либо сравниваем даты между собой либо с NULL, NULL всегда больше
-    if (timeMarkA===timeMarkB)  return 0
+    if (timeMarkA===timeMarkB) return canBanSortItemsById(a,b);
 
     //console.log('date differ '+timeMarkA+' vs '+timeMarkB);
     if (!timeMarkA) return 1; //У А нет даты, потому он "позже"
@@ -212,6 +222,7 @@ function canBanSortOpenItems(a,b) {
 
     return (timeMarkA>timeMarkB)?1:-1;
 
+    return canBanSortItemsById(a,b);
 
     //если до сюда дошли, значит оба без даты
     //console.log('wow. comparing sort index '+sortingA+' vs '+sortingB);

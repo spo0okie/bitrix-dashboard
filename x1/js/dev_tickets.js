@@ -176,6 +176,7 @@ function userTicketInitItemData(data) {
     if (!$item.length) {
         $item=userTicketCreateEmptyItem();
         $item.attr('data-ticket-id',id);
+        $item.attr('data-item-id',id);
     }
     userTicketUpdateFromJson($item,data);
     placeCanbanItemCorrect($item);

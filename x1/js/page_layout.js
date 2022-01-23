@@ -564,6 +564,8 @@ function findCanbanUlForItem($li) {
  */
 function placeCanbanItemCorrect($li) {
     let $ul=findCanbanUlForItem($li);
+    let $oldUl=$li.parents('ul');
+    //if ($oldUl===$ul) return ;
     let $oldTd=$li.parents('td.userColumn');
     if ($ul && $ul.length) {
         $ul.append($li);

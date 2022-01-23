@@ -228,7 +228,10 @@ function userJobStopEdit($job) {
                 success: function (data) {
                     //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
                     let json = $.parseJSON(data); // create an object with the key of the array
-                    if (json.id) $job.attr('data-job-id',json.id);
+                    if (json.id) {
+                        $job.attr('data-job-id',json.id);
+                        $job.attr('data-item-id',json.id);
+                    }
                     $preview.html($newText.replace(/\r?\n/g,'<br>'));
                     $preview.show();
                     //$toggle.show();
@@ -393,6 +396,7 @@ function userJobInitItemData(data) {
     if (!$item.length) {
         $item=userJobCreateEmptyItem();
         $item.attr('data-job-id',id);
+        $item.attr('data-item-id',id);
     }
     userJobUpdateFromJson($item,data);
     placeCanbanItemCorrect($item);

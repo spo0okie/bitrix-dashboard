@@ -327,7 +327,7 @@ function userTaskUpdateFromJson($li,json) {
         $deadline.html($.datepicker.formatDate( "dd.mm.y", new Date(closedDate)));
     } else {
         $li.addClass('open').removeClass('closed')
-        $li.attr('data-timestamp',deadline?Math.max(deadline,Date.now()+$globServerTimeShift):0);
+        $li.attr('data-timestamp',deadline?Math.max(deadline,$globToday):0);
         $deadline.html(deadline?$.datepicker.formatDate( "dd.mm.y", new Date(deadline)):'нет срока');
     }
 
@@ -369,6 +369,7 @@ function userTaskInitItemsData(data) {
         if (!$item.length) {
             $item=userTaskCreateEmptyItem();
             $item.attr('data-task-id',id);
+            $item.attr('data-item-id',id);
             $item.attr('data-user-id',user);
         }
         userTaskUpdateFromJson($item,data);
