@@ -220,6 +220,7 @@ function userTaskUpdateFromJson($li,json) {
     let closedDate=bitrixDateTimeToUnix(json['CLOSED_DATE']);
     let sorting=json["XML_ID"]?json["XML_ID"]:null;
     let priority=json['PRIORITY'];
+    let favorite=json['FAVORITE']==='Y';
 
     let stopConfirm="Приостановить выполнение задачи "+id+"?"
     let startConfirm="Начать выполнение задачи "+id+"?"
@@ -317,6 +318,12 @@ function userTaskUpdateFromJson($li,json) {
             $li.addClass('activeNow');
         } else {
             $li.removeClass('activeNow');
+        }
+
+        if (favorite) {
+            $li.addClass('favorite');
+        } else {
+            $li.removeClass('favorite');
         }
     }
 
