@@ -1,5 +1,37 @@
 let $globalJobApiUri=$globalApiUri+'job';
 
+function userJobRenderMouseOver($elem) {
+    //$globalHoveredTask=$elem;
+    //let $taskId=$elem.attr('data-task-id');
+    let taskId=$elem.attr('data-parent-id');
+    let ticketId=$elem.attr('data-parent-ticket-id');
+    if (taskId) {
+        $('li.userTask[data-task-id='+taskId+']').addClass('hovered');
+        $('li.userJob[data-parent-id='+taskId+']').addClass('childTask');
+    }
+    if (ticketId) {
+        $('li.userTicket[data-ticket-id='+ticketId+']').addClass('hovered');
+        $('li.userJob[data-parent-ticket-id='+ticketId+']').addClass('childTask');
+    }
+}
+
+function userJobRenderMouseOut($elem) {
+    let taskId=$elem.attr('data-parent-id');
+    let ticketId=$elem.attr('data-parent-ticket-id');
+    if (taskId) {
+        $('li.userTask[data-task-id='+taskId+']').removeClass('hovered');
+        $('li.userJob[data-parent-id='+taskId+']').removeClass('childTask');
+    }
+    if (ticketId) {
+        $('li.userTicket[data-ticket-id='+ticketId+']').removeClass('hovered');
+        $('li.userJob[data-parent-ticket-id='+ticketId+']').removeClass('childTask');
+    }
+}
+
+/**
+ * Создание LI пустого элемента "работа"
+ * @returns {*|jQuery.fn.init|jQuery|HTMLElement}
+ */
 function userJobCreateEmptyItem()
 {
     let $li=$('<li class="userJob userItem">');
@@ -15,9 +47,17 @@ function userJobCreateEmptyItem()
     $li.append($toggle);
     $li.append($preview);
     $li.append($form);
+    $li.mouseenter(function (){userJobRenderMouseOver($li)});
+    $li.mouseleave(function (){userJobRenderMouseOut($li)});
+
     return $li;
 }
 
+/**
+ * Кнопочка создания новой работы (открытой или закрытой в зависимости от родительского списка)
+ * @param $ul
+ * @returns {boolean}
+ */
 function userJobCreateNew($ul) {
     let $td=$ul.parent('td.userColumn');
     let $period=$td.parents('div.row');
@@ -45,6 +85,11 @@ function userJobCreateNew($ul) {
     //$form.modal();
 }
 
+/**
+ * Переключение закрыть/открыть работу
+ * @param $job
+ * @returns {boolean}
+ */
 function userJobCloseToggle($job) {
     let $jobId=$job.attr('data-job-id');
     if (!$jobId) {
@@ -88,11 +133,14 @@ function userJobCloseToggle($job) {
 }
 
 
+/**
+ * Начать редактирование текста работы
+ * @param $job
+ * @returns {boolean}
+ */
 function userJobEdit($job) {
-    //$job=$($job);
     let $form=$job.children('form.edit');
     let $preview=$job.children('span.preview');
-    let $toggle=$job.children('span.jobToggle');
     let html=$preview.html();
     let oldText=(typeof html === "string")?
         html.replace(/<br\s*[\/]?>/gi,"\n"):
@@ -148,16 +196,19 @@ function userJobEdit($job) {
     //$form.modal();
 }
 
+/**
+ * Окончание редактирования работы
+ * @param $job
+ */
 function userJobStopEdit($job) {
     //let $job=$('li[jobId='+$jobId+'].userJob');
 
     let $form=$job.children('form.edit');
     let $preview=$job.children('span.preview');
-    let $toggle=$job.children('span.jobToggle');
     let $input=$form.children('textarea.jobDescription.visible');
     let $oldText=$job.attr('data-old-text');
     let $newText=$input.val();
-    let $jobId=$job.attr('data-job-id');//?$job.attr('data-job-id'):0;
+    let $jobId=$job.attr('data-job-id');
     console.log('stopping edit of '+$jobId)
 
     //текст удалили из ячейки
@@ -184,7 +235,7 @@ function userJobStopEdit($job) {
         return ;
     }
 
-    if ($newText != $oldText) {
+    if ($newText !== $oldText) {
         console.log('new text entered');
         //сохраняем новые значения
 
@@ -199,10 +250,9 @@ function userJobStopEdit($job) {
                     console.log('error stop editing job '+$jobId);
                 },
                 success: function () {
-                    //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
+                    //обновляем текст в самой работе (а не в input)
                     $preview.html($newText.replace(/\r?\n/g,'<br>'));
                     $preview.show();
-                    //$toggle.show();
                     $form.hide();
                     $form.html(' ');
 
@@ -226,15 +276,15 @@ function userJobStopEdit($job) {
                     console.log('error saving new job');
                 },
                 success: function (data) {
-                    //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
+                    //после сохранения добавляем ИД работы в элемент
                     let json = $.parseJSON(data); // create an object with the key of the array
                     if (json.id) {
                         $job.attr('data-job-id',json.id);
                         $job.attr('data-item-id',json.id);
                     }
                     $preview.html($newText.replace(/\r?\n/g,'<br>'));
+                    userJobFindTasks($job,$newText);
                     $preview.show();
-                    //$toggle.show();
                     $form.hide();
                     $form.html(' ');
 
@@ -246,7 +296,6 @@ function userJobStopEdit($job) {
 
     } else {
         $preview.show();
-        //$toggle.show();
         $form.hide();
         $form.html(' ');
     }
@@ -256,18 +305,23 @@ function userJobCancelEdit($job) {
     let $form = $job.children('form.edit');
     let $preview = $job.children('span.preview');
     let $input = $form.children('textarea.jobDescription.visible');
-    let $oldText = $job.data('oldText');
+    let $oldText = $job.attr('data-old-text');
     let $newText = $input.val();
-    let $jobId = $job.data('jobid') ? $job.data('jobid') : 0;
-    console.log('canceling edit of ' + $jobId)
+    let $jobId = $job.attr('data-job-id') ? $job.attr('data-job-id') : 0;
 
     if ($newText.trim().length && $newText !== $oldText) {
         if (!confirm('Отменить изменения?')) return false;
     }
+    console.log('canceling edit of ' + $jobId)
 
-    $preview.show();
-    $form.hide();
-    $form.html(' ');
+    if (!$jobId) {
+        $job.remove();
+    } else {
+        $preview.show();
+        $form.hide();
+        $form.html(' ');
+    }
+
 }
 
 function jobOnStopDrag($item,$oldContainer,$newContainer) {
@@ -361,6 +415,30 @@ function renderNewJobLink($ul,closed)
     return $link;
 }
 
+/**
+ * если в тексте обнаруживается ссылка на задачу - добавляет аттрибут к элементу
+ * @param $li
+ * @param $text
+ */
+function userJobFindTasks($li,text) {
+    let taskRe=/задача\s*[#№]?\s*:?\s*(\d+)/i;
+    let taskMatch=text.match(taskRe);
+    if (Array.isArray(taskMatch) && taskMatch.length) {
+        let taskId=taskMatch[1];
+        $li.attr('data-parent-id',taskId);
+    } else {
+        $li.attr('data-parent-id',null);
+    }
+    let ticketRe=/(тикет|заявка)\s*[#№]?\s*:?\s*(\d+)/i;
+    let ticketMatch=text.match(ticketRe);
+    if (Array.isArray(ticketMatch) && ticketMatch.length) {
+        let ticketId=ticketMatch[2];
+        $li.attr('data-parent-ticket-id',ticketId);
+    } else {
+        $li.attr('data-parent-ticket-id',null);
+    }
+}
+
 
 function userJobUpdateFromJson($li,data)
 {
@@ -369,7 +447,7 @@ function userJobUpdateFromJson($li,data)
         timeMark=bitrixDateTimeToUnix(data['DATE_ACTIVE_TO']);
         $li.addClass('closed').removeClass('open');
     } else if (data['DATE_ACTIVE_FROM']) {
-        timeMark=Math.max(bitrixDateTimeToUnix(data['DATE_ACTIVE_FROM']),Date.now()+$globServerTimeShift);
+        timeMark=Math.max(bitrixDateTimeToUnix(data['DATE_ACTIVE_FROM']),$globToday);
         $li.addClass('open').removeClass('closed');
     }
 
@@ -379,7 +457,8 @@ function userJobUpdateFromJson($li,data)
     $li.attr('data-job-end',bitrixDateTimeToUnix(data['DATE_ACTIVE_TO']));
     $li.attr('data-timestamp',timeMark);
     $li.attr('data-sorting',data['SORT']);
-    $li.data('bitrix',data);
+    //$li.data('bitrix',data);
+    userJobFindTasks($li,data['~PREVIEW_TEXT']);
     //console.log(data);
     return $li;
 }
@@ -392,7 +471,7 @@ function userJobUpdateFromJson($li,data)
  */
 function userJobInitItemData(data) {
     let id=data['ID'];
-    let $item=$('li.userJob[data-job-id='+id+']');
+    let $item=$('li.userJob[data-job-id=\''+id+'\']');
     if (!$item.length) {
         $item=userJobCreateEmptyItem();
         $item.attr('data-job-id',id);

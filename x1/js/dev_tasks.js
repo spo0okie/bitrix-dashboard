@@ -122,78 +122,6 @@ function taskOnStopDrag($item,$oldContainer,$newContainer) {
 }
 
 
-
-function userTaskCreate($periodId,$userId,$date) {
-    let $parent=$('td[periodId='+$periodId+'][userId='+$userId+'].userColumn > ul.openItems');
-    let $newItem=$('<li class="userItem userTask"><form class="edit" style="display: none"></form></li>');
-
-    $newItem.data('taskDeadline',$date);
-    $newItem.data('userId',$userId);
-
-    userJobInsertInList($newItem,$parent);
-    let $form=$job.children('form.edit');
-    let $preview=$job.children('span.preview');
-    let $oldText=$preview.html().replace(/<br\s*[\/]?>/gi,"\n");
-    let $jobId=$job.data('jobid');
-    let $jobClosed=false;
-    console.log('editing job '+$jobId);
-
-    $input=$('<textarea name="description" rows='+Math.max(1,$oldText.split("\n").length)+' class="jobDescription visible" />');
-
-    /*
-    //вариант с Ctrl+Enter
-    $input.on('keydown',function(e){
-        console.log('wow! such a key...');
-        if (e.key === "Escape") {userJobCancelEdit($job)}
-        if (e.key === "Enter" && e.ctrlKey) {userJobStopEdit($job)}
-    })*/
-
-    $input.on('keydown',{input:$input},function(event){
-        let $input=event.data.input;
-        if (event.key === "Escape") {userJobCancelEdit($job); event.preventDefault(); return false;}
-        if (event.key === "Enter" && event.altKey) {
-            if ($input.prop('selectionStart') || $input.prop('selectionStart') == '0') {
-                console.log('inserting CRLF');
-                let startPos = $input.prop('selectionStart') ;
-                let endPos = $input.prop('selectionEnd') ;
-                let curValue=$input.val();
-                $input.val(
-                    curValue.substring(0, startPos)
-                    + "\r\n"
-                    + curValue.substring(endPos, curValue.length)
-                );
-                startPos++;
-                $input.prop('selectionStart',startPos);
-                $input.prop('selectionEnd',startPos);
-            } else {
-                console.log('adding CRLF');
-                $input.val($input.val() + "\r\n");
-            }
-            event.preventDefault();
-            return false;
-        }
-        if (event.key === "Enter") {userJobStopEdit($job); event.preventDefault(); return false;}
-    });
-
-    $form.append($input);
-
-    $job.data('oldText',$oldText);
-    $input.val($oldText);
-
-    $form.click(function () {return false;})
-
-    $preview.hide();
-    $form.show();
-
-    $form.focusout(function () {userJobStopEdit($job)})
-    $input.focus();
-    $input.autoResize({extraSpace:0,minLines:1}).trigger('change.dynSiz');
-
-    //console.log($job);
-    return false;    //$form.modal();
-}
-
-
 function userTaskCreateEmptyItem() {
     let $li=$('<li class="userItem userTask"></li>');
     let $title=$('<a class="task-title-link modal-link"></a>').modalLink({
@@ -360,8 +288,8 @@ function userTaskInitItemsData(data) {
             }
         })
     }
-    $('li.userTask[data-task-id='+id+']').each(function(){
-        console.log(this);
+    $('li.userTask[data-task-id=\''+id+'\']').each(function(){
+        //console.log(this);
         if (users.indexOf($(this).attr('data-user-id'))===-1) {
             $(this).remove();
         }

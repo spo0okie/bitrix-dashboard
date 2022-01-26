@@ -68,8 +68,8 @@ function increaseScrollBlock(n,scrollBack=true) {
 
 }
 
-function releaseScrollBlock(scrollBack=true) {
-    $globScrollBlock--;
+function releaseScrollBlock(n=1, scrollBack=true) {
+    $globScrollBlock-=n;
     //console.log('current scroll has '+$globScrollBlock+' blocks');
     if (!$globScrollBlock) $maxScrollBlock=0;
     updateLoadingGauge();
@@ -283,7 +283,8 @@ function customizeTeamPeriodRow($row,periodDay,periodStart,periodEnd) {
     let weekDay=periodDay-periodWeek*7;
     //'period'+Math.abs(week)+' dayPeriod'+((week*7+day) < $globWeekDay?' closedPeriod':''),
     //console.log('Setting up period Row with startDay='+periodDay+', week='+periodWeek+', day='+weekDay+', dayRange='+periodRangeDays);
-    $row.addClass('period'+Math.abs(periodWeek));
+    $row.removeClass('period0 period1 period2 period3 period4 period5 period6 period7');
+    $row.addClass('period'+Math.min(Math.abs(periodWeek),7)); //мы не нарисовали радугу дальше 7й недели, так что 7 и дальше одним цветом
 
     if (periodRangeDays>1 || !periodEnd) {
         //console.log('as a week');
@@ -376,6 +377,91 @@ function customizeTeamPeriodRow($row,periodDay,periodStart,periodEnd) {
     return periodLayout;
 }
 
+function renderPeriodLoadButton(week) {
+    let $span=$('<span class="periodLoad '+(week<0?'closed':'open')+'"></span>');
+    let $load=$('<span>['+(week<0?'↑':'↓')+']</span>');
+    $load.click(function(){
+        loadTeamWeek(week,false);
+        //надо скрыть элементы управления на текущем периоде, т.к. он более не крайний
+        if (week<0)
+            Cookies.set('minLoadedWeek',$minLoadedWeek,{expires:365});
+        else
+            Cookies.set('maxLoadedWeek',$maxLoadedWeek,{expires:365});
+        teamPeriodTitleMouseOut($span.parent('div.rowTitleCell'));
+    });
+    let $close=$('<span>[X]</span>');
+    $close.click(function() {
+        let closeWeek = (week < 0) ? $minLoadedWeek : $maxLoadedWeek;
+        let $row = $('div.row[data-week-index=\'' + closeWeek + '\']');
+        if (closeWeek < 0){
+            //с закрытыми периодами ничего не делаем, просто удаляем
+            $minLoadedWeek++;
+            Cookies.set('minLoadedWeek', $minLoadedWeek, {expires: 365});
+        } else {
+            //открытые надо сбросить в ведро
+            $maxLoadedWeek--;
+            Cookies.set('maxLoadedWeek',$maxLoadedWeek,{expires:365});
+            let $bucket=$('div.calendarRow.bucket');
+            if ($bucket.length) {
+                let $bucketPeriod=$bucket.children('div.row');
+                customizeTeamPeriodRow(
+                    $bucketPeriod,
+                    ($maxLoadedWeek+1)*7,
+                    $globMonday0+86400*7000*($maxLoadedWeek+1),
+                    0
+                );
+                //делаем дату в удаляемом периоде некорректной
+                $row.attr('data-unix-start-date',null);
+                $row.attr('data-unix-end-date',null);
+                //говорим все элементы из этого периода перераспределить
+                //по идее теперь корректным периодом для них является ведро
+                console.log('resort items');
+                rearrangeIncorrectItems($row);
+                console.log('resort items complete');
+            }
+        }
+        $row.parent('div.calendarRow').remove();
+
+    });
+
+    if (week<0){
+        $span.append($load);
+        if ($minLoadedWeek) $span.append($close);
+    } else {
+        if ($maxLoadedWeek) $span.append($close);
+        $span.append($load);
+    }
+
+    return $span;
+}
+
+function teamPeriodTitleMouseOver($rowTitle) {
+    // тут нам надо определить нужно ли в этом заголовке периода разрешать подгружать предыдущий или следующий
+    let $row=$rowTitle.parent('div.row');
+    let $calRow=$row.parent('div.calendarRow');
+    let isBucket=$calRow.hasClass('bucket');
+    let $title=$rowTitle.children('h3');
+    if ($row.attr('data-range')==='week') {
+        if (Number($row.attr('data-week-index'))===$minLoadedWeek)
+            $rowTitle.append(renderPeriodLoadButton($minLoadedWeek-1));
+        if (Number($row.attr('data-week-index'))===$maxLoadedWeek)
+            $rowTitle.append(renderPeriodLoadButton($maxLoadedWeek+1));
+    } else {
+        //console.log('over day');
+        if (Number($row.attr('data-day-index'))===0 && Number($row.attr('data-week-index'))===$minLoadedWeek)
+            $rowTitle.append(renderPeriodLoadButton($minLoadedWeek-1));
+        if (Number($row.attr('data-day-index'))===6 && Number($row.attr('data-week-index'))===$maxLoadedWeek)
+            $rowTitle.append(renderPeriodLoadButton($maxLoadedWeek+1));
+    }
+
+
+}
+
+function teamPeriodTitleMouseOut($rowTitle) {
+    console.log('out');
+    $rowTitle.children('span.periodLoad').remove();
+}
+
 function renderTeamPeriodRow(periodDay,periodStart,periodEnd) {
     //console.log('Building period for day '+periodDay);
     let $row=$('<div class="row"></div>');
@@ -385,6 +471,9 @@ function renderTeamPeriodRow(periodDay,periodStart,periodEnd) {
         e.stopPropagation();
         scrollToAnchor($row.attr('id'));
     });
+    $title.mouseenter(function (){teamPeriodTitleMouseOver($title)});
+    $title.mouseleave(function (){teamPeriodTitleMouseOut($title)});
+
     $row.append($title);
 
     let periodLayout=customizeTeamPeriodRow($row,periodDay,periodStart,periodEnd);
@@ -603,14 +692,18 @@ function placeCanbanItemCorrect($li) {
 function rearrangeIncorrectItems($row) {
     //console.log($row.data('unixStartDate'));
     let periodStart=Number($row.attr('data-unix-start-date'))
-    let periodEnd  =Number($row.attr('data-unix-start-date'))
+    let periodEnd  =Number($row.attr('data-unix-end-date'))
     if (isNaN(periodStart)) periodStart=0;
     if (isNaN(periodEnd))   periodEnd=0;
     $row.find('li.userItem[data-timestamp]').filter(function(){
-        let timestamp=$(this).data('timestamp');
-        //console.log(periodStart+' - '+timestamp+' - '+periodEnd);
-        return !periodStart || (timestamp > periodEnd) || (timestamp < periodStart);
+        let timeStamp=Number($(this).attr('data-timestamp'));
+        if (!periodStart || (timeStamp && timeStamp < periodStart) || (periodEnd && timeStamp > periodEnd)) {
+            //console.log(periodStart+' - '+timeStamp+' - '+periodEnd);
+            return true
+        } else
+            return false;
     }).each(function (){
+        //console.log($(this));
         placeCanbanItemCorrect($(this).detach());
     })
 }
@@ -621,30 +714,65 @@ function rearrangeIncorrectItems($row) {
  * @param bucket флаг, что это период-ведро, без дальней границы
  */
 function loadTeamWeek(week,bucket=false) {
-    increaseScrollBlock(4);
-    let $calRow=$('<div class="calendarRow horizontal"></div>');
+    let $calRow=$('<div class="calendarRow '+($globalUserLayout?'vertical':'horizontal')+'"></div>');
     let $week=renderTeamWeek(week,bucket);
     $calRow.append($week);
     let periodStart=$globMonday0/1000+86400*7*week;
     let periodEnd=bucket?null:$globSunday0/1000+86400*7*week;
+    let $bucket=$('div.calendarRow.bucket');
+    increaseScrollBlock(4);
     if (week<0) {
         $calRow.addClass('closedPeriod');
         $calRow.insertAfter($('div.headerRow'));
         if (!$globShowClosed) $calRow.hide();
     } else {
-        if (bucket) $calRow.addClass('bucket');
-        $('body').append($calRow);
+        if (bucket) {
+            $calRow.addClass('bucket');
+            $('body').append($calRow);
+        } else {
+            if ($bucket.length)
+                $calRow.insertBefore($bucket);
+            else
+                $('body').append($calRow);
+        }
     }
-    if (Cookies.get('expandWeek'+week)==='true') expandWeek($week);
+    if (!bucket) {
+        //если надо разбить недельку - разбиваем
+        if (Cookies.get('expandWeek'+week)==='true') expandWeek($week);
+        //пересчитываем первую и последнюю загруженные недели
+        $minLoadedWeek=Math.min(week,$minLoadedWeek);
+        $maxLoadedWeek=Math.max(week,$maxLoadedWeek);
+        //если ведро уже загружено то сдвигаем его начало на после максимальной загруженной недели
+        if (week>0 && $bucket.length) {
+            let $bucketPeriod=$bucket.children('div.row');
+            customizeTeamPeriodRow(
+                $bucketPeriod,
+                ($maxLoadedWeek+1)*7,
+                $globMonday0+86400*7000*($maxLoadedWeek+1),
+                0
+            );
+            //перекидываем элементы, которые теперь должны находиться в новой неделе а не в ведре
+            rearrangeIncorrectItems($bucketPeriod);
+            //отпускаем скролл
+            releaseScrollBlock(4,false);
+            return;
+        }
+    }
     loadJobs(periodStart,periodEnd,[...$globUserList.keys()],releaseScrollBlock);
     loadTasks(periodStart,periodEnd,[...$globUserList.keys()],releaseScrollBlock);
     loadTickets(periodStart,periodEnd,[...$globUserList.keys()],releaseScrollBlock);
     loadAbsents(periodStart,periodEnd,[...$globUserList.keys()],releaseScrollBlock);
+    scrollToAnchor($globScrollPos);
 }
 
 
+
 function toggleUserLayout(userId) {
-    if (!$globalUserLayout) {
+    userId=Number(userId);
+    if (isNaN(userId)) userId=0;
+
+    console.log('Switching to user '+ userId);
+    if (!$globalUserLayout && userId) {
         $globalUserLayout=userId;
         $globUserList.forEach(function(name,id) {
             if (Number(userId) !== Number(id)) {
@@ -662,6 +790,7 @@ function toggleUserLayout(userId) {
                 $('td.userColumn[data-user-id='+id+']').show();
             }
         })
-        scrollToAnchor('period0-day0');
+        scrollToAnchor($globScrollPos);
     }
+    Cookies.set('globalUserLayout',$globalUserLayout,{expires:365});
 }

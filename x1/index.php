@@ -100,22 +100,28 @@ foreach ($canban_users as $idx=>$name) $jsUsers[]="[$idx,'$name']";
     let $globShowJobs=(Cookies.get('globShowJobs')==='true');
     let $globShowTickets=(Cookies.get('globShowTickets')==='true');
     let $globShowParticipants=(Cookies.get('globShowParticipants')==='true');
-    if ($globShowClosed) $('span#globToggleClosed').addClass('toggleOn');
-    if ($globShowJobs) $('span#globToggleJobs').addClass('toggleOn');
-    if ($globShowTickets) $('span#globToggleTickets').addClass('toggleOn');
-    if ($globShowParticipants) $('span#globToggleParticipants').addClass('toggleOn');
     console.log('today is '+$globWeekDay);
     //console.log($globShowClosed)
     //console.log($globShowClosed?'showing closed':'hiding closed');
 
     $('body').append(renderPageHeader());
-    loadTeamWeek(-1);
+    if ($globShowClosed) $('span#globToggleClosed').addClass('toggleOn');
+    if ($globShowJobs) $('span#globToggleJobs').addClass('toggleOn');
+    if ($globShowTickets) $('span#globToggleTickets').addClass('toggleOn');
+    if ($globShowParticipants) $('span#globToggleParticipants').addClass('toggleOn');
+
+    let $minLoadedWeek=0;
+    let $maxLoadedWeek=0;
     loadTeamWeek(0);
-    loadTeamWeek(1);
-    loadTeamWeek(2);
-    loadTeamWeek(3);
-    loadTeamWeek(4);
-    loadTeamWeek(5,true);
+    loadTeamWeek(1,true);
+    toggleUserLayout(Cookies.get('globalUserLayout'))
+
+    let minWeekToLoad=(Cookies.get('minLoadedWeek'));
+    let maxWeekToLoad=(Cookies.get('maxLoadedWeek'));
+
+    while ($minLoadedWeek>minWeekToLoad) loadTeamWeek($minLoadedWeek-1);
+    while ($maxLoadedWeek<maxWeekToLoad) loadTeamWeek($maxLoadedWeek+1);
+
 </script>
 </body>
 </html>

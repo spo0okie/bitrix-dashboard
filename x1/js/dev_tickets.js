@@ -1,83 +1,22 @@
 let $globalTicketApiUri=$globalApiUri+'ticket';
 
 
-function userTicketOnStopDrag($item,$oldContainer,$newContainer) {
-    //задача
-    let $jobId=$item.attr('data-job-id');
-    let $oldTd=$oldContainer.parent('td.userColumn');
-    let $oldPeriod=$oldTd.parents('div.row');
-    let $newTd=$newContainer.parent('td.userColumn');
-    let $newPeriod=$newTd.parents('div.row');
-
-    //юзер ячейки
-    //let $itemUser=$item.data('userid');
-
-
-    let $oldUserId=     $oldTd.attr('data-user-id');
-    let $oldDate=       $oldPeriod.attr('data-unix-start-date');
-
-    //let $newUserName=   $newContainer.attr('username');
-    let $newUserId=     $newTd.attr('data-user-id');
-    let $newDate=       $newPeriod.attr('data-unix-start-date');
-
-    let newSorting=getNewItemSortIndex($item);
-    console.log('placing at sort='+newSorting);
-
-    let $changes= {};
-
-    if ($oldUserId!==$newUserId) {
-        $changes.userId=$newUserId
-        $item.attr('data-user-id',$newUserId);
+function ticketRenderMouseOver($elem) {
+    let ticketId=$elem.attr('data-ticket-id');
+    let $children=$('li[data-parent-ticket-id=' + ticketId + ']');
+    if ($children.length) {
+        $('li[data-ticket-id='+ticketId+']').addClass('hovered');
+        $($children).addClass('childTask');
     }
+}
 
-    if ($oldDate!==$newDate) {
-        $item.attr('data-job-start',$newDate)
-        $changes.jobStart=Math.floor($newDate/1000);
+function ticketRenderMouseOut($elem) {
+    let ticketId=$elem.attr('data-ticket-id');
+    let $children=$('li[data-parent-ticket-id=' + ticketId + ']');
+    if ($children.length) {
+        $('li[data-ticket-id=' + ticketId + ']').removeClass('hovered');
+        $($children).removeClass('childTask');
     }
-
-    if ($item.attr('data-sorting')!==newSorting) {
-        $changes.sorting=newSorting;
-        $item.attr('data-sorting',newSorting);
-    }
-
-
-    if (Object.keys($changes).length === 0)
-    {
-        console.log('nothing changed');
-        $item.effect(
-            "highlight",
-            {color:'grey'},
-            400,
-        );
-        canBanSortUl($newContainer);
-        return false;
-    }
-
-    //сохраняем новые значения
-    $.ajax({
-        url: $globalJobApiUri+'/update/'+$jobId,
-        type: "POST",
-        data: $changes,
-        context: $item,
-        error: function () {
-            $item.effect(
-                "highlight",
-                {color:'red'},
-                400,
-            )
-            canBanSortUl($newContainer);
-        },
-        success: function () {
-            //если в новой ячейке есть уже такая задача значит местами меняются ответственный и соисполнитель
-            $item.effect(
-                "highlight",
-                {color:'green'},
-                400,
-            )
-            canBanSortUl($newContainer);
-            return true;
-        },
-    });
 }
 
 
@@ -96,6 +35,9 @@ function userTicketCreateEmptyItem()
 
     $li.append($a);
     $li.append($deadline);
+    $li.mouseenter(function (){ticketRenderMouseOver($li)});
+    $li.mouseleave(function (){ticketRenderMouseOut($li)});
+
     return $li;
 }
 

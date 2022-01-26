@@ -73,9 +73,9 @@ li.userTask.favorite {background: url("fav48.png") 50% 50% no-repeat, linear-gra
 /* чужая задача */
 li.userTask.dimmedOut   {opacity: 60%;}
 /* подсветка (задача под курсором, родительская, дочерние) */
-div.row td.userColumn ul li.userTask.hovered     {border-color: lime; background: palegreen; color:#333; text-shadow: none}
-div.row td.userColumn ul li.userTask.parentTask  {border-color: orange; background: darkgoldenrod; color:#333; text-shadow: none}
-div.row td.userColumn ul li.userTask.childTask   {border-color: dodgerblue; background: deepskyblue; color:#333; text-shadow: none}
+div.row td.userColumn ul li.userItem.hovered     {border-color: lime; background: palegreen; color:#333; text-shadow: none}
+div.row td.userColumn ul li.userItem.parentTask  {border-color: orange; background: darkgoldenrod; color:#333; text-shadow: none}
+div.row td.userColumn ul li.userItem.childTask   {border-color: dodgerblue; background: deepskyblue; color:#333; text-shadow: none}
 
 /*тикет*/
 td.userColumn ul li.userTicket {

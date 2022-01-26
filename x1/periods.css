@@ -82,6 +82,8 @@ div.row.period5 {border-color: blueviolet}
 div.row.period5 div.rowTitleCell, div.row.period5 tr.periodHeader {background-color: blueviolet; color: white}
 div.row.period6 {border-color: darkslateblue}
 div.row.period6 div.rowTitleCell, div.row.period6 tr.periodHeader {background-color: darkslateblue; color: white}
+div.row.period7 {border-color: #333333}
+div.row.period7 div.rowTitleCell, div.row.period6 tr.periodHeader {background-color: #333333; color: white}
 
 
 /*однопользовательская раскладка*/
@@ -126,3 +128,13 @@ div.calendarRow.vertical div.row.day6 {
     border-width: 2px;
     border-radius: 0 0 2px 2px;
 }
+div.row div.rowTitleCell span.periodLoad {
+    cursor:pointer;
+    position: absolute;
+    z-index: 9000;
+    background: inherit;
+}
+div.calendarRow.vertical   div.row div.rowTitleCell span.periodLoad.open {right: 2px; top: 1px;}
+div.calendarRow.vertical   div.row div.rowTitleCell span.periodLoad.closed {left: 2px; top: 1px;}
+div.calendarRow.horizontal div.row div.rowTitleCell span.periodLoad.open {left:2px; bottom: 2px;}
+div.calendarRow.horizontal div.row div.rowTitleCell span.periodLoad.closed {left:2px; top: 2px;}

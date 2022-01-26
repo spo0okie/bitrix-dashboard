@@ -356,7 +356,7 @@ function getUlMinSortingIndex(ul) {
 
 $(window).scroll(function(e){
     //console.log(e);
-    if ($globScrollBlock>0) return;
+    if ($globScrollBlock>0 || $globalUserLayout>0) return;
     let visibleTop = $(this).scrollTop()+$globBodyMargin; // or the value for the #navigation height
     let visibleBottom = $(this).scrollTop()+$globBodyMargin+$(window).height(); // or the value for the #navigation height
     let fromTop=visibleTop+$(window).height()/2;
