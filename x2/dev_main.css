@@ -1,0 +1,136 @@
+html {height: 100%}
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 12px;
+    color: #333;
+    background-color: #666;
+    padding: 20px 0 0;
+    display: block;
+    height: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    vertical-align: top;
+}
+
+body.bg1 {
+    background-image: url('8az22dhd57l61.jpg');
+    background-position: 50%;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+body.bg2 {
+    background-image: url('id-portfolio336.jpg');
+    background-position: 50%;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+
+/* параметры таблички по умолчанию */
+table {
+    border: none;
+    border-spacing: 0;
+    vertical-align: top;
+    width:100%;
+    padding: 0; margin: 0;
+}
+
+td {
+    vertical-align: top;
+    padding: 0;
+}
+
+
+
+
+/* Плавающая шапка */
+div.row.headerRow {
+    position: fixed;
+    top: 0;
+    background: white;
+    font-weight: bold;
+    text-shadow: 0 0 3px white;
+    min-height: 0 !important;
+    padding: 0;
+    margin: 0;
+    z-index: 990;
+    box-shadow: 0 6px 6px rgba(0,0,0,0.5);
+    border:none;
+}
+
+/* что угодно с курсором как для ссылки*/
+.href {
+    cursor: pointer;
+}
+
+/* Заголовок слева */
+div.toolsPanel {
+    background: white;
+    position: fixed;
+    top: 0;
+    z-index: 999;
+}
+
+
+
+
+
+span.midPriority {color: green;}
+span.hiPriority {color: red;}
+
+div.tooltipster-content span,
+div.tooltipster-content a
+{
+    color: white;
+}
+
+div.tooltipster-content div.description {
+    max-width: 500px;
+    max-height: 300px;
+}
+
+div.tooltipster-content span.tooltipField {
+    font-size: small;
+}
+
+/*
+td.activeNow {background: #666;}
+td.today {background: #999;}
+td.week {background: #bbb}
+td.sixWeeks {background: #ddd;}
+td.farAway {background: #fff;}
+*/
+li.placeholder {
+    height: 40px;
+    /*background-color: lightgreen;*/
+    border-radius: 5px !important;
+    border: 2px solid lime;
+}
+li.ui-sortable-helper {
+    border-color: red;
+    border-radius: 5px !important;
+}
+li.redBordered {
+    border: 2px solid red !important;
+    background: lightcoral;
+}
+li.greenBordered {
+    border: 2px solid lime !important;
+    background: lightgreen;
+}
+
+li.activeNow {
+    border: 2px solid orangered !important;
+    padding: 1px;
+}
+
+
+
+.clickable {cursor: pointer;}
+
+
+span.toggleOn {background-color: lime;}
+
+tr.pageToolBar {display: none;}
+div.row.headerRow:hover table tr.pageToolBar {display: table-row;}
